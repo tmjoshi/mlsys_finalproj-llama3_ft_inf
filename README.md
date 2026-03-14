@@ -17,7 +17,7 @@ In my project, for Llama 3.2 1B (from model args in model.py):
 16 decoder layers   
 num_kv_heads = 8   
 head_dim = d_model / n_heads = 2048 / 32 = 64   
-For Llama 3.2 1B, as GQA, it is 'hidden_size = (num_kv_heads * head_dim)', so I'm making sure to plug that in and not 'hidden_size = (num_heads * head_dim)'  
+For Llama 3.2 1B, as GQA, it is '(num_kv_heads * head_dim)', so I'm making sure to plug that in and not '(num_heads * head_dim)'  
 
 Now, plugging everything in, this makes:   
 Size of K/V Cache per token in bytes = 2 * 16 * (8 * 64) * 2 bytes  
@@ -35,7 +35,7 @@ precision_in_bytes for FP16 = 2 bytes
 from model args in the project code:     
 1) max_batch_size = 4    
 2) max_seq_len = 256     
-3) hidden_size = num_kv_heads * head_dim = 8 * 64 = 512  
+3) num_kv_heads * head_dim = 8 * 64 = 512  
 4) num_layers = 16  
   
 All of these tensor dimensions were pre-allocated for the K/V Cache tensor  
