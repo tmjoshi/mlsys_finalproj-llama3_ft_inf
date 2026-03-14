@@ -6,7 +6,7 @@ Formula: approx (Number of billion parameters * sizeof(fp16)) GB
 Eg: Llama 3.2 1B: 1 * 2 bytes = 2GB memory 
 So model weights need **2GB** memory for the Llama 3.2 1B model 
  
-## 3) K/V Cache: 
+## 2) K/V Cache: 
 Size of K/V Cache per token in bytes = 2 * (num_layers) * (num_heads * dim_head) *  precision_in_bytes 
 
 (num_heads * dim_head) = d_model, so plug that in 
@@ -32,9 +32,10 @@ All of these tensor dimensions were pre-allocated for the K/V Cache tensor
 Now, plugging all these values in,  
 Total size of K/V Cache in bytes = 4 * 256 * 2 * 16 * 2048 * 2 bytes ~= 134,217,728 bytes = 134 MB = 0.13 GB 
 So? the total size of the K/V Cache tensor = **0.13 GB** for the Llama 3.2 1B model 
+
  
 {On a slightly deviating note:- 
-Another quick calculation here: 
+some quick calculations: 
 If we want max_seq_len number of tokens generated per time step (which is 256): 
 Every time step results in: 256 * (1 token's memory) = 256 * 0.13 MB = 33.28 MB 
 So? Every time step results in 33.28 MB being added to the existing K/V Cache tensor memory} 
