@@ -54,7 +54,7 @@ Llama 3.2 1B (with all assumptions according to my project) consumes: **2.13 GB*
 
 
 
-Sources used in calculations: 
+Sources I used in calculations: 
 1) USC EE508 Notes
 2) Lei Gao, Kevin Yang, Chaoyi Jiang, USC EE508 Final Project: Efficient Processing of LLMs
 3) Sebastian Raschka, Understanding and Coding the KV Cache in LLMs from Scratch: https://magazine.sebastianraschka.com/p/coding-the-kv-cache-in-llms
