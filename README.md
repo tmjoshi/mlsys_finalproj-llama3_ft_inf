@@ -1,4 +1,4 @@
-# Notes on LLM Memory requirements:
+# Notes on LLM Memory requirements
 
 ## 1) Model Weights: 
 
