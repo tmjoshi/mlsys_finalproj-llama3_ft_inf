@@ -22,7 +22,8 @@ Size of K/V Cache per token in bytes = 2 * 16 * 2048 * 2 bytes
 = 0.13 MB   
 
 So? 1 token tensor in the K/V Cache needs **0.13 MB**    
- 
+
+
 **Total size of KV cache in bytes = (batch_size) * (sequence_length) * 2 * (num_layers) * (d_model) *  precision_in_bytes**   
  
 Eg: in my project, for Llama 3.2 1B, the method for K/V Cache storage is: K/V Cache pre-allocation   
@@ -44,10 +45,13 @@ some quick calculations:
 If we want max_seq_len number of tokens generated per time step (which is 256):   
 Every time step results in: 256 * (1 token's memory) = 256 * 0.13 MB = 33.28 MB   
 So? Every time step results in 33.28 MB being added to the existing K/V Cache tensor memory}   
- 
+
+
 Finally,   
 Total Memory = Model Weights + Total size of KV Cache = 2 GB + 0.13 GB = 2.13 GB   
 Llama 3.2 1B (with all assumptions according to my project) consumes: **2.13 GB**  
+
+
 
 
 Sources used in calculations: 
