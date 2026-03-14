@@ -2,14 +2,14 @@
 
 ## 1) Model Weights: 
 
-If model weights loaded in 16-bit precision (FP16/BF16):  
+If model weights loaded in 16-bit precision (FP16/BF16),   
 Formula: approx (Number of billion parameters * sizeof(fp16)) GB   
 Eg: Llama 3.2 1B: 1 * 2 bytes = 2GB memory   
 So model weights need **2GB** memory for the Llama 3.2 1B model  
  
 ## 2) K/V Cache: 
 
-### Size of K/V Cache per token in bytes = 2 * (num_layers) * (num_heads * dim_head) *  precision_in_bytes  
+**Size of K/V Cache per token in bytes = 2 * (num_layers) * (num_heads * dim_head) *  precision_in_bytes**  
 
 (num_heads * dim_head) = d_model, so plug that in  
 
@@ -23,7 +23,7 @@ Size of K/V Cache per token in bytes = 2 * 16 * 2048 * 2 bytes
 
 So? 1 token tensor in the K/V Cache needs **0.13 MB**    
  
-### Total size of KV cache in bytes = (batch_size) * (sequence_length) * 2 * (num_layers) * (d_model) *  precision_in_bytes   
+**Total size of KV cache in bytes = (batch_size) * (sequence_length) * 2 * (num_layers) * (d_model) *  precision_in_bytes**   
  
 Eg: in my project, for Llama 3.2 1B, the method for K/V Cache storage is: K/V Cache pre-allocation   
 precision_in_bytes for FP16 = 2 bytes   
