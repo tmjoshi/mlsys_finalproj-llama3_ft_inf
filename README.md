@@ -56,8 +56,7 @@ Reasoning for GPU selection:
 1) Whether it fits:  
    - P100 has 16 GB memory  
    - Looking at Total Memory (about 2 GB), the model fits on P100  
-4) P100 is a relatively smaller GPU, maybe more available compared to larger GPUs, like A40 (48 GB) or A100 (80 GB), as USC Research Labs must be using the larger ones 
-
+2) P100 is a relatively smaller GPU, maybe more available compared to larger GPUs, like A40 (48 GB) or A100 (80 GB)
 
 
 
