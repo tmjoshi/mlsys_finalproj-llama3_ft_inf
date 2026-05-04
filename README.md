@@ -25,7 +25,7 @@ Size of K/V Cache per token in bytes = 2 * 16 * (8 * 64) * 2 bytes
 = 33 KB   
 = 0.033 MB   
 
-So? 1 token tensor in the K/V Cache needs **0.033 MB**      
+1 token tensor in the K/V Cache needs **0.033 MB**      
 
 
 **Total size of KV cache in bytes = (batch_size) * (sequence_length) * 2 * (num_layers) * (hidden_size) *  precision_in_bytes**     
@@ -45,7 +45,7 @@ Total size of K/V Cache in bytes = 4 * 256 * 2 * 16 * 512 * 2 bytes
 = 33,554,432 bytes   
 = 33.5 MB  
 = 0.0335 GB   
-So? the total size of the K/V Cache tensor = **0.0335 GB** for the Llama 3.2 1B model     
+Total size of the K/V Cache tensor = **0.0335 GB** for the Llama 3.2 1B model     
 
 
 Finally,    
