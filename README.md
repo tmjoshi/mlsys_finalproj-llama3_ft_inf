@@ -48,7 +48,7 @@ Total size of the K/V Cache tensor = **0.031 GB** for the Llama 3.2 1B model
 
 
 Finally,    
-Total Memory = Model Weights + Total size of KV Cache = 2 GB + 0.031 GB = 2.0335 GB     
+Total Memory = Model Weights + Total size of KV Cache = 2 GB + 0.031 GB = 2.031 GB     
 Llama 3.2 1B roughly consumes: **2.031 GB**  
 
 Reasoning for GPU selection:
