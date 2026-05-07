@@ -22,7 +22,6 @@ For Llama 3.2 1B, as GQA, it is '(num_kv_heads * head_dim)', and not '(num_heads
 Now, plugging everything in, this makes:   
 Size of K/V Cache per token in bytes = 2 * 16 * (8 * 64) * 2 bytes  
 = 32,768 B   
-= 32 KB   
 ~ 0.03 MB   
 
 1 token tensor in the K/V Cache needs **0.03 MB**      
