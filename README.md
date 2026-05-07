@@ -51,6 +51,7 @@ Total Memory = Model Weights + Total size of KV Cache = 2 GB + 0.031 GB = 2.031 
 Llama 3.2 1B roughly consumes: **2.031 GB**  
 
 Reasoning for GPU selection:
+
 Whether it fits:  
    - P100 : 16 GB  
    - Looking at Total Memory (about 2 GB), the model fits on P100  
