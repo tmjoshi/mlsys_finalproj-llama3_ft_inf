@@ -22,10 +22,10 @@ For Llama 3.2 1B, as GQA, it is '(num_kv_heads * head_dim)', and not '(num_heads
 Now, plugging everything in, this makes:   
 Size of K/V Cache per token in bytes = 2 * 16 * (8 * 64) * 2 bytes  
 = 32,768 B   
-= 33 KB   
-= 0.033 MB   
+= 32 KB   
+~ 0.03 MB   
 
-1 token tensor in the K/V Cache needs **0.033 MB**      
+1 token tensor in the K/V Cache needs **0.03 MB**      
 
 
 **Total size of KV cache in bytes = (batch_size) * (sequence_length) * 2 * (num_layers) * (hidden_size) *  precision_in_bytes**     
@@ -42,19 +42,18 @@ All of these tensor dimensions were pre-allocated for the K/V Cache tensor
  
 Now, plugging all these values in,      
 Total size of K/V Cache in bytes = 4 * 256 * 2 * 16 * 512 * 2 bytes   
-= 33,554,432 bytes   
-= 33.5 MB  
-= 0.0335 GB   
-Total size of the K/V Cache tensor = **0.0335 GB** for the Llama 3.2 1B model     
+= 33,554,432 bytes     
+~ 0.031 GB   
+Total size of the K/V Cache tensor = **0.031 GB** for the Llama 3.2 1B model     
 
 
 Finally,    
-Total Memory = Model Weights + Total size of KV Cache = 2 GB + 0.0335 GB = 2.0335 GB     
-Llama 3.2 1B (with all assumptions according to my project) consumes: **2.0335 GB**  
+Total Memory = Model Weights + Total size of KV Cache = 2 GB + 0.031 GB = 2.0335 GB     
+Llama 3.2 1B roughly consumes: **2.031 GB**  
 
 Reasoning for GPU selection:
 1) Whether it fits:  
-   - P100 has 16 GB memory  
+   - P100 : 16 GB  
    - Looking at Total Memory (about 2 GB), the model fits on P100  
 2) P100 is a relatively smaller GPU, maybe more available compared to larger GPUs, like A40 (48 GB) or A100 (80 GB)
 
