@@ -26,7 +26,6 @@ PROMPT_DICT = {
     ),
 }
 
-# tokenization
 def _tokenize_fn_llama(texts, tok: Tokenizer, max_length: int):
     ids_list, lens = [], []
     for txt in texts:
@@ -38,9 +37,8 @@ def _tokenize_fn_llama(texts, tok: Tokenizer, max_length: int):
         lens.append(len(ids))
     return ids_list, lens
 
-# preprocessing
+
 def preprocess_llama(sources, targets, tok: Tokenizer, max_length: int):
-    # full sequences: source + target
     full_texts = [s + t for s, t in zip(sources, targets)]
     full_ids, _    = _tokenize_fn_llama(full_texts, tok, max_length)
     _,       src_lens = _tokenize_fn_llama(sources, tok, max_length)
@@ -48,12 +46,12 @@ def preprocess_llama(sources, targets, tok: Tokenizer, max_length: int):
     labels = []
     for seq, slen in zip(full_ids, src_lens):
         lbl = seq.clone()
-        lbl[:slen] = IGNORE_INDEX       # mask out prompt tokens
+        lbl[:slen] = IGNORE_INDEX   
         labels.append(lbl)
 
     return dict(input_ids=full_ids, labels=labels)
 
-# Dataset
+
 class SupervisedDataset(Dataset):
     def __init__(self, data_path: str, tokenizer: Tokenizer, max_length: int):
 
@@ -63,12 +61,6 @@ class SupervisedDataset(Dataset):
         logging.warning("Formatting inputs...")
         sources = []
         targets = []
-        # for ex in data:
-        #     prompt = (PROMPT_DICT["prompt_input"] 
-        #               if ex.get("input", "") 
-        #               else PROMPT_DICT["prompt_no_input"])
-        #     sources.append(prompt.format_map(ex))
-        #     targets.append(ex["output"] + tokenizer.eos_id)
 
         eos_token_str = tokenizer.decode([tokenizer.eos_id])
         for ex in data:
@@ -76,7 +68,6 @@ class SupervisedDataset(Dataset):
                        if ex.get("input", "") 
                        else PROMPT_DICT["prompt_no_input"])
             sources.append(prompt.format_map(ex))
-            # append the EOS *string*, not the ID
             targets.append(ex["output"] + eos_token_str)
 
         logging.warning("Tokenizing inputs... This may take some time...")
@@ -91,7 +82,7 @@ class SupervisedDataset(Dataset):
         return dict(input_ids=self.input_ids[idx],
                     labels=self.labels[idx])
 
-# collator
+
 @dataclass
 class DataCollatorForSupervisedDataset:
     tokenizer: Tokenizer
@@ -100,7 +91,7 @@ class DataCollatorForSupervisedDataset:
         input_ids = [inst["input_ids"] for inst in instances]
         labels    = [inst["labels"]    for inst in instances]
 
-        pad_val = self.tokenizer.eos_id  # use a valid token ID instead of -1
+        pad_val = self.tokenizer.eos_id 
 
         input_ids = torch.nn.utils.rnn.pad_sequence(
             input_ids, batch_first=True, padding_value=pad_val
@@ -114,7 +105,7 @@ class DataCollatorForSupervisedDataset:
                     attention_mask=attention_mask,
                     labels=labels)
 
-# calculate peak memory in MB
+
 def get_peak_memory_mb():
     return torch.cuda.max_memory_allocated() / (1024 ** 2)
 
@@ -124,20 +115,20 @@ def compute_shift_logits_labels(logits: torch.Tensor, labels: torch.Tensor):
     then flatten for CrossEntropyLoss.
     """
 
-    # shift so that token t predicts t+1
-    shift_logits = logits[..., :-1, :].contiguous()  # (B, T-1, V)
-    shift_labels = labels[..., 1:].contiguous()      # (B, T-1)
+    
+    shift_logits = logits[..., :-1, :].contiguous()  
+    shift_labels = labels[..., 1:].contiguous()    
 
-    # flatten for CE
+    
     B, Tm1, V = shift_logits.size()
-    shift_logits = shift_logits.view(-1, V)          # (B*(T-1), V)
-    shift_labels = shift_labels.view(-1)             # (B*(T-1),)
+    shift_logits = shift_logits.view(-1, V)         
+    shift_labels = shift_labels.view(-1)           
 
     return shift_logits, shift_labels
 
-# Training entrypoint
+
 def finetune(data_path, checkpoint_dir, output_dir, batch_size=2, num_epochs=3, lr=1e-5, accumulate_steps=8, grad_acc=False, mixed_p=False, use_lora=False):
-    # — load model & tokenizer —
+    # load model and tokenizer
     tok = Tokenizer(os.path.join(checkpoint_dir, "tokenizer.model"))
     assert hasattr(tok, "pad_id") and hasattr(tok, "eos_id")
 
@@ -156,7 +147,7 @@ def finetune(data_path, checkpoint_dir, output_dir, batch_size=2, num_epochs=3, 
             if not ("lora_A" in name or "lora_B" in name):
                 param.requires_grad = False
 
-    # grad accumulation hyperparams
+    
     if grad_acc:
         accumulation_steps = accumulate_steps
         mini_batch_size = batch_size // accumulation_steps
@@ -164,13 +155,10 @@ def finetune(data_path, checkpoint_dir, output_dir, batch_size=2, num_epochs=3, 
         accumulation_steps = 1
         mini_batch_size = batch_size
     
-    # — data loader —
+    # data loader
     ds     = SupervisedDataset(data_path, tok, max_length=max_length)
     coll   = DataCollatorForSupervisedDataset(tok)
     loader = DataLoader(ds, batch_size=mini_batch_size, shuffle=True, collate_fn=coll)
-
-    # — optimizer & loop —
-    # SGD w/o momentum
     
     if use_lora:
         optim = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0, foreach=False)
@@ -185,7 +173,6 @@ def finetune(data_path, checkpoint_dir, output_dir, batch_size=2, num_epochs=3, 
     optim.zero_grad()
     for epoch in range(num_epochs):
         for step, batch in enumerate(loader):
-            # move to device
             input_ids      = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
             labels         = batch["labels"].to(device)
@@ -193,22 +180,18 @@ def finetune(data_path, checkpoint_dir, output_dir, batch_size=2, num_epochs=3, 
             torch.cuda.synchronize()
             start_time = time.time()
 
-            # forward → get logits only
             if mixed_p:
                 with autocast():
                     outputs = model(tokens=input_ids, start_pos=0)
-                    logits = outputs                        # (B, T, V)
+                    logits = outputs                        
 
                     shift_logits, shift_labels = compute_shift_logits_labels(logits, labels)
 
-                    # compute loss, skipping IGNORE_INDEX
                     loss = loss_function(shift_logits, shift_labels)
 
                 scaler.scale(loss).backward()
 
-                # scaler.step(optim)
-                # scaler.update()
-                # optim.zero_grad()
+                
             else: # no mixed precision
                 outputs = model(tokens=input_ids, start_pos=0)
                 logits = outputs
@@ -216,7 +199,6 @@ def finetune(data_path, checkpoint_dir, output_dir, batch_size=2, num_epochs=3, 
                 shift_logits, shift_labels = compute_shift_logits_labels(logits, labels)
                 loss = loss_function(shift_logits, shift_labels)
 
-                # backprop
                 loss.backward()
                 
             if (step) % 20 == 0:
@@ -231,11 +213,6 @@ def finetune(data_path, checkpoint_dir, output_dir, batch_size=2, num_epochs=3, 
                     optim.step()
                 optim.zero_grad()
 
-                # if grad_acc:
-                #     if (step + 1) % accumulation_steps == 0:
-                #         optim.step()
-                #         optim.zero_grad()
-
             torch.cuda.synchronize()
             end_time = time.time()
             summed_duration += (end_time - start_time)
@@ -248,14 +225,12 @@ def finetune(data_path, checkpoint_dir, output_dir, batch_size=2, num_epochs=3, 
         trainable_params = sum(param_tensor.numel() for param_tensor in model.parameters() if param_tensor.requires_grad)
         print(f"Percentage of trainable parameters: {((trainable_params / total_params)*100):.2f}%")
 
-    # — save fine-tuned model —
+    # save model
     os.makedirs(output_dir, exist_ok=True)
     torch.save(model.state_dict(), os.path.join(output_dir, "finetuned_llama_state_dict.bin"))
 
     with open(os.path.join(output_dir, "model_args.json"), "w") as f:
         json.dump(asdict(model_args), f, indent=2)
-
-    # model.save_pretrained(output_dir)
 
 if __name__ == "__main__":
     finetune(
