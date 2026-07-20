@@ -13,18 +13,11 @@ def inference():
     tokenizer = Tokenizer(tokenizer_path)
     # model_path = os.path.join(checkppoint_dir, "consolidated.00.pth")
 
-    # reconstruct args
     model_args = ModelArgs(**json.load(open("./finetuned_llama/model_args.json")))
-    torch.set_default_tensor_type(torch.cuda.HalfTensor) # load model in fp16
+    torch.set_default_tensor_type(torch.cuda.HalfTensor)
     model = Llama(model_args)
     model.load_state_dict(torch.load("./finetuned_llama/finetuned_llama_state_dict.bin", map_location="cpu"), strict=True)
     model.eval()
-
-    # checkpoint = torch.load(model_path, map_location="cpu")
-    # model_args = ModelArgs()
-    # torch.set_default_tensor_type(torch.cuda.HalfTensor) # load model in fp16
-    # model = Llama(model_args)
-    # model.load_state_dict(checkpoint, strict=True)
 
     device = "cuda"
     model.to(device)
