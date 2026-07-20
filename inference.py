@@ -15,7 +15,7 @@ def inference():
 
     checkpoint = torch.load(model_path, map_location="cpu")
     model_args = ModelArgs()
-    torch.set_default_tensor_type(torch.cuda.HalfTensor) # load model in fp16
+    torch.set_default_tensor_type(torch.cuda.HalfTensor)
     model = Llama(model_args)
     model.load_state_dict(checkpoint, strict=True)
     device = "cuda"
@@ -30,7 +30,7 @@ def inference():
 	        Hi everyone,
 	        
 	        I just """,
-	        # Few shot prompt (providing a few examples before asking model to complete more);
+
 	        """Translate English to French:
 	        
 	        sea otter => loutre de mer
