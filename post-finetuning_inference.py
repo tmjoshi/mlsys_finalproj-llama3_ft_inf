@@ -30,7 +30,6 @@ def inference():
     model.to(device)
 
     prompts = [
-	        # For these prompts, the expected answer is the natural continuation of the prompt
 	        "I believe the meaning of life is",
 	        "Simply put, the theory of relativity states that ",
 	        """A brief message congratulating the team on the launch:
@@ -38,7 +37,7 @@ def inference():
 	        Hi everyone,
 	        
 	        I just """,
-	        # Few shot prompt (providing a few examples before asking model to complete more);
+	        
 	        """Translate English to French:
 	        
 	        sea otter => loutre de mer
