@@ -11,7 +11,6 @@ from torch import nn
 from torch.utils.checkpoint import checkpoint
 
 from llama.generation import Generation
-from llama.lora import Linear as LoRALinear
 
 
 @dataclass
