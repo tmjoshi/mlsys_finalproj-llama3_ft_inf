@@ -93,9 +93,9 @@ def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0):
         torch.Tensor: Precomputed frequency tensor with complex exponentials.
     """
     freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
-    t = torch.arange(end, device=freqs.device)  # type: ignore
-    freqs = torch.outer(t, freqs).float()  # type: ignore
-    freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
+    t = torch.arange(end, device=freqs.device)  
+    freqs = torch.outer(t, freqs).float()  
+    freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  
     return freqs_cis
 
 
@@ -196,14 +196,10 @@ class Attention(nn.Module):
         self.head_dim = args.dim // args.n_heads
 
         self.wq = nn.Linear(args.dim, args.n_heads * self.head_dim, bias=False)
-        # LoRA Q projection
-        # self.wq = LoRALinear(in_features=args.dim, out_features=args.n_heads * self.head_dim, r=16, lora_alpha=32, lora_dropout=0.05, bias=False)
 
         self.wk = nn.Linear(args.dim, self.n_kv_heads * self.head_dim, bias=False)
 
         self.wv = nn.Linear(args.dim, self.n_kv_heads * self.head_dim, bias=False)
-        # LoRA V projection
-        # self.wv = LoRALinear(in_features=args.dim, out_features=self.n_kv_heads * self.head_dim, r=16, lora_alpha=32, lora_dropout=0.05, bias=False)
         
         self.wo = nn.Linear(args.n_heads * self.head_dim, args.dim, bias=False)
 
@@ -271,17 +267,17 @@ class Attention(nn.Module):
             values = xv
 
 
-        keys = repeat_kv(keys, self.n_rep)  # (bs, cache_len + seqlen, n_local_heads, head_dim)
-        values = repeat_kv(values, self.n_rep)  # (bs, cache_len + seqlen, n_local_heads, head_dim)
+        keys = repeat_kv(keys, self.n_rep)  
+        values = repeat_kv(values, self.n_rep)  
 
-        xq = xq.transpose(1, 2)  # (bs, n_local_heads, seqlen, head_dim)
-        keys = keys.transpose(1, 2) # (bs, n_local_heads, cache_len + seqlen, head_dim)
-        values = values.transpose(1, 2) # (bs, n_local_heads, cache_len + seqlen, head_dim)
+        xq = xq.transpose(1, 2)  
+        keys = keys.transpose(1, 2) 
+        values = values.transpose(1, 2) 
         scores = torch.matmul(xq, keys.transpose(2, 3)) / math.sqrt(self.head_dim)
         if mask is not None:
-            scores = scores + mask  # (bs, n_local_heads, seqlen, cache_len + seqlen)
+            scores = scores + mask  
         scores = F.softmax(scores.float(), dim=-1).type_as(xq)
-        output = torch.matmul(scores, values)  # (bs, n_local_heads, seqlen, head_dim)
+        output = torch.matmul(scores, values)  
         output = output.transpose(1, 2).contiguous().view(bsz, seqlen, -1)
         return self.wo(output)
 
@@ -311,7 +307,7 @@ class FeedForward(nn.Module):
         """
         super().__init__()
         hidden_dim = int(2 * hidden_dim / 3)
-        # custom dim factor multiplier
+        
         if ffn_dim_multiplier is not None:
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
         hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
@@ -323,7 +319,7 @@ class FeedForward(nn.Module):
     def _forward(self, x):
         return self.w2(F.silu(self.w1(x)) * self.w3(x))
 
-    # checkpoint all ops in forward pass
+    
     def forward(self, x):
         return checkpoint(self._forward, x)
 
@@ -383,7 +379,6 @@ class TransformerBlock(nn.Module):
             torch.Tensor: Output tensor after applying attention and feedforward layers.
 
         """
-        # with activation checkpointing
         attn_input = self.attention_norm(x)
         attn_out = checkpoint(
             lambda inp: self.attention(inp, start_pos, freqs_cis, mask),
@@ -391,12 +386,6 @@ class TransformerBlock(nn.Module):
         )
 
         h = x + attn_out    
-        # h = x + self.attention.forward(
-        #     self.attention_norm(x), start_pos, freqs_cis, mask
-        # )
-        # out = h + self.feed_forward.forward(self.ffn_norm(h))
-
-        # with activation checkpointing
         out = h + checkpoint(self.feed_forward, self.ffn_norm(h))
         return out
 
