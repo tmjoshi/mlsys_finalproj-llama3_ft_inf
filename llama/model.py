@@ -11,25 +11,25 @@ from torch import nn
 from torch.utils.checkpoint import checkpoint
 
 from llama.generation import Generation
-from llama.lora import Linear as LoRALinear # from lora.py file
+from llama.lora import Linear as LoRALinear
 
 
 @dataclass
-class ModelArgs: # fixed model configurations for Llama3.2-1B
+class ModelArgs: # fixed model config for llama
     dim: int = 2048
     n_layers: int = 16
     n_heads: int = 32
     n_kv_heads: int = 8
     vocab_size: int = 128256
-    multiple_of: int = 256  # make SwiGLU hidden layer size multiple of large power of 2
+    multiple_of: int = 256 
     ffn_dim_multiplier: float = 1.5
     norm_eps: float = 1e-5
     rope_theta: float = 500000
 
-    max_batch_size: int = 4  # for kv caching pre-allocation
-    max_seq_len: int = 256   # for kv caching pre-allocation
+    max_batch_size: int = 4  
+    max_seq_len: int = 256   
 
-    kv_caching: bool = False # enable/disable KV Cache
+    kv_caching: bool = False 
 
 class RMSNorm(torch.nn.Module):
     def __init__(self, dim: int, eps: float = 1e-6):
