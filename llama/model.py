@@ -14,7 +14,7 @@ from llama.generation import Generation
 
 
 @dataclass
-class ModelArgs: # fixed model config for llama
+class ModelArgs:
     dim: int = 2048
     n_layers: int = 16
     n_heads: int = 32
@@ -262,7 +262,6 @@ class Attention(nn.Module):
             keys = self.cache_k[:bsz, : start_pos + seqlen]
             values = self.cache_v[:bsz, : start_pos + seqlen]
         else:
-            # pass
             keys = xk
             values = xv
 
