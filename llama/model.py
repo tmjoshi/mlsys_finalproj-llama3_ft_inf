@@ -205,8 +205,8 @@ class Attention(nn.Module):
 
         self.kv_caching = args.kv_caching
         if self.kv_caching:
-            # Pre-allocate cache tensors for keys and values
-            self.cache_k = torch.zeros(
+            # K tensor cache
+            self.cache_k = torch.zeros( 
                 (
                     args.max_batch_size,
                     args.max_seq_len,
@@ -214,6 +214,8 @@ class Attention(nn.Module):
                     self.head_dim,
                 )
             ).cuda()
+
+            # V tensor cache
             self.cache_v = torch.zeros(
                 (
                     args.max_batch_size,
