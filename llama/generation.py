@@ -22,21 +22,18 @@ class Generation(nn.Module):
         prev_pos = 0
         for cur_pos in range(min_prompt_len, total_len):
             with torch.no_grad():
-                #ipdb.set_trace()
                 if kv_caching:
                     logits = self(tokens[:, prev_pos:cur_pos], prev_pos)
                 else:
-                    #pass
                     logits = self(tokens[:, :cur_pos], prev_pos)
             if temperature > 0:
-                probs = torch.softmax(logits[:, -1] / temperature, dim=-1) ###
+                probs = torch.softmax(logits[:, -1] / temperature, dim=-1)
                 next_token = sample_top_p(probs, top_p)
             else:
                 next_token = torch.argmax(logits[:, -1], dim=-1)
-            #ipdb.set_trace()
 
             next_token = next_token.reshape(-1)
-            # only replace token if prompt has already been generated
+
             next_token = torch.where(
                 input_text_mask[:, cur_pos], tokens[:, cur_pos], next_token
             )
@@ -53,11 +50,9 @@ class Generation(nn.Module):
 
         out_tokens = []
         for i, toks in enumerate(tokens.tolist()):
-            # cut to max gen len
             start = len(prompt_tokens[i])
             toks = toks[start : len(prompt_tokens[i]) + max_gen_len]
 
-            # cut to eos tok if any
             if tokenizer.eos_id in toks:
                 eos_idx = toks.index(tokenizer.eos_id)
                 toks = toks[:eos_idx]
